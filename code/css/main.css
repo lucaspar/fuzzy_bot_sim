@@ -4,10 +4,19 @@ html, body {
 }
 
 #wrapper {
-    
+
 }
 
 #canvas {
     display: block;
     margin: auto;
+}
+
+.view-title {
+    text-transform: uppercase;
+    color: #fff;
+    text-shadow: 1px 1px 2px #333;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 1em 1em;
 }

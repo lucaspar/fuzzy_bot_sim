@@ -1,0 +1,43 @@
+{
+	"metadata": {
+		"version": 4.5,
+		"type": "Object",
+		"generator": "Object3D.toJSON"
+	},
+	"geometries": [
+		{
+			"uuid": "E5E2FB9E-F2B8-4BBC-BEF8-BCCC3F7E9FA5",
+			"type": "CylinderBufferGeometry",
+			"radiusTop": 2.5,
+			"radiusBottom": 2.5,
+			"height": 1,
+			"radialSegments": 32,
+			"heightSegments": 1,
+			"openEnded": false
+		}],
+	"materials": [
+		{
+			"uuid": "FEA35C1B-C23C-414F-8079-2EAEA11B542A",
+			"type": "MeshStandardMaterial",
+			"color": 16777215,
+			"roughness": 0.5,
+			"metalness": 0.5,
+			"emissive": 0,
+			"depthFunc": 3,
+			"depthTest": true,
+			"depthWrite": true,
+			"skinning": false,
+			"morphTargets": false,
+			"dithering": false
+		}],
+	"object": {
+		"uuid": "5E37A245-57FA-44F7-856D-674901FD1507",
+		"type": "Mesh",
+		"name": "Bot",
+		"castShadow": true,
+		"receiveShadow": true,
+		"matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0.531929,0,1],
+		"geometry": "E5E2FB9E-F2B8-4BBC-BEF8-BCCC3F7E9FA5",
+		"material": "FEA35C1B-C23C-414F-8079-2EAEA11B542A"
+	}
+}

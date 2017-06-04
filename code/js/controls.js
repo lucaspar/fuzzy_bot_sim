@@ -1,4 +1,5 @@
-function keydown (car, ev) {
+// Car controls
+function car_keydown (car, ev) {
     switch( ev.keyCode ) {
         case 65:
         case 37:
@@ -38,7 +39,7 @@ function keydown (car, ev) {
     }
 };
 
-function keyup (car, ev) {
+function car_keyup (car, ev) {
     switch( ev.keyCode ) {
 
         case 65:
@@ -71,6 +72,83 @@ function keyup (car, ev) {
             // Down
             car.wheel_bl_constraint.disableAngularMotor( 2 );
             car.wheel_br_constraint.disableAngularMotor( 2 );
+            break;
+    }
+}
+
+
+//==============================================================================
+
+// Bot controls
+function bot_keydown (bot, ev) {
+    switch( ev.keyCode ) {
+        case 65:
+        case 37:
+            // Left
+            bot.wheel_fl_constraint.configureAngularMotor( 2, 1, 0, -30, 5000 );
+            bot.wheel_fr_constraint.configureAngularMotor( 2, 1, 0, 30, 5000 );
+            bot.wheel_fl_constraint.enableAngularMotor( 2 );
+            bot.wheel_fr_constraint.enableAngularMotor( 2 );
+            break;
+
+        case 68:
+        case 39:
+            // Right
+            bot.wheel_fl_constraint.configureAngularMotor( 2, 1, 0, 30, 5000 );
+            bot.wheel_fr_constraint.configureAngularMotor( 2, 1, 0, -30, 5000 );
+            bot.wheel_fl_constraint.enableAngularMotor( 2 );
+            bot.wheel_fr_constraint.enableAngularMotor( 2 );
+            break;
+
+        case 87:
+        case 38:
+            // Up
+            bot.wheel_fl_constraint.configureAngularMotor( 2, 1, 0, 30, 5000 );
+            bot.wheel_fr_constraint.configureAngularMotor( 2, 1, 0, 30, 5000 );
+            bot.wheel_fl_constraint.enableAngularMotor( 2 );
+            bot.wheel_fr_constraint.enableAngularMotor( 2 );
+            break;
+
+        case 83:
+        case 40:
+            // Down
+            bot.wheel_fl_constraint.configureAngularMotor( 2, 1, 0, -30, 5000 );
+            bot.wheel_fr_constraint.configureAngularMotor( 2, 1, 0, -30, 5000 );
+            bot.wheel_fl_constraint.enableAngularMotor( 2 );
+            bot.wheel_fr_constraint.enableAngularMotor( 2 );
+            break;
+    }
+};
+
+function bot_keyup (bot, ev) {
+    switch( ev.keyCode ) {
+
+        case 65:
+        case 37:
+            // Left
+            bot.wheel_fl_constraint.disableAngularMotor( 2 );
+            bot.wheel_fr_constraint.disableAngularMotor( 2 );
+            break;
+
+        case 68:
+        case 39:
+            // Right
+            bot.wheel_fl_constraint.disableAngularMotor( 2 );
+            bot.wheel_fr_constraint.disableAngularMotor( 2 );
+            break;
+
+        case 87:
+        case 38:
+            // Up
+            bot.wheel_fl_constraint.disableAngularMotor( 2 );
+            bot.wheel_fr_constraint.disableAngularMotor( 2 );
+            break;
+
+        case 83:
+        case 40:
+            // Down
+            bot.wheel_fl_constraint.disableAngularMotor( 2 );
+            bot.wheel_fr_constraint.disableAngularMotor( 2 );
             break;
     }
 }
