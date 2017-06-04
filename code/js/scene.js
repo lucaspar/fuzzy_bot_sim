@@ -1,7 +1,7 @@
 'use strict';
 
 function setRenderer() {
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer({ antialias: false });
     renderer.setClearColor( 0xdddddd );
     renderer.setSize( window.innerWidth, 600 );
     renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
@@ -290,7 +290,9 @@ function createObstacles() {
             wall.rotation.y = Math.PI / -2;
         }
         wall.position.set( posX, boxHeight/2, posZ );
+
         scene.add(wall);
+        collidableMeshList.push(wall);
     }
 }
 
@@ -376,17 +378,43 @@ function createBot() {
             steering: 0
         };
 
-        scene.addEventListener('update', function() {
-            if(vehicle && vehicle.position){
-                var ray = new THREE.Ray( vehicle.position, new THREE.Vector3(vehicle.position.x, vehicle.position.y, wall.position.z).subSelf( vehicle.position ).normalize() );
-                var intersects = ray.intersectObject( wall );
+        let sphereGeometry = new THREE.SphereGeometry( 0.8, 32, 32 );
+        let sphereMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, shading: THREE.FlatShading } );
 
-                if ( intersects.length > 0 ) {
-                    var face = intersects[0].face.d,
-                    dist = intersects[0].distance;
-                    console.log("CRASH!");
-                };
+        for ( let i = 0; i < 5; i++ ) {
+            let sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+            scene.add( sphere );
+            spheres.push( sphere );
+        }
+
+        scene.addEventListener('update', function() {
+
+            var rotationMatrix = new THREE.Matrix4();
+            var direction = new THREE.Vector3( 0, 0, 1 );
+
+            rotationMatrix.extractRotation( body.matrix );
+            direction.applyMatrix4( rotationMatrix );
+
+            raycaster.set( body.position, direction );
+            console.log(body.rotation.x);
+
+			let intersections = raycaster.intersectObjects( collidableMeshList );
+			let intersection = ( intersections.length ) > 0 ? intersections[ 0 ] : null;
+
+            //console.log(intersection);
+
+            if ( intersection !== null ) {
+                spheres[ spheresIndex ].position.copy( intersection.point );
+                spheres[ spheresIndex ].scale.set( 1, 1, 1 );
+                spheresIndex = ( spheresIndex + 1 ) % spheres.length;
             }
+
+            for ( var i = 0; i < spheres.length; i++ ) {
+                var sphere = spheres[ i ];
+                sphere.scale.multiplyScalar( 0.98 );
+                sphere.scale.clampScalar( 0.01, 1 );
+            }
+
 
             if ( input && vehicle ) {
                 if ( input.direction !== null ) {
@@ -408,6 +436,7 @@ function createBot() {
                 //vehicle.setSteering( input.steering, 1 );
 
                 if ( input.power === true ) {
+                    vehicle.setBrake( 0 );
                     vehicle.applyEngineForce( 100 );
                 }
                 else if ( input.power === false ) {
@@ -417,7 +446,6 @@ function createBot() {
 
                 else if (input.direction === null && input.power === null) {
                     vehicle.applyEngineForce( 0 );
-                    vehicle.setBrake( 0 );
                 }
             }
 

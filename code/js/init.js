@@ -2,8 +2,11 @@
 
 Physijs.scripts.worker = 'js/physijs/physijs_worker.js'
 let windowWidth, windowHeight, mouseX, mouseY;
-let renderer, scene, stats, camera;
-let views;
+let renderer, scene, stats, camera, views;
+let collidableMeshList = [], spheres = [], spheresIndex = 0;
+
+let raycaster = new THREE.Raycaster();
+raycaster.params.Points.threshold = 0.1;
 
 //==============================================================================
 
