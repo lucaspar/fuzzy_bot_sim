@@ -80,75 +80,50 @@ function car_keyup (car, ev) {
 //==============================================================================
 
 // Bot controls
-function bot_keydown (bot, ev) {
-    switch( ev.keyCode ) {
+function bot_keydown (ev, input) {
+    switch ( ev.keyCode ) {
         case 65:
-        case 37:
-            // Left
-            bot.wheel_fl_constraint.configureAngularMotor( 2, 1, 0, -30, 5000 );
-            bot.wheel_fr_constraint.configureAngularMotor( 2, 1, 0, 30, 5000 );
-            bot.wheel_fl_constraint.enableAngularMotor( 2 );
-            bot.wheel_fr_constraint.enableAngularMotor( 2 );
-            break;
-
-        case 68:
-        case 39:
-            // Right
-            bot.wheel_fl_constraint.configureAngularMotor( 2, 1, 0, 30, 5000 );
-            bot.wheel_fr_constraint.configureAngularMotor( 2, 1, 0, -30, 5000 );
-            bot.wheel_fl_constraint.enableAngularMotor( 2 );
-            bot.wheel_fr_constraint.enableAngularMotor( 2 );
+        case 37: // left
+            input.direction = 1;
             break;
 
         case 87:
-        case 38:
-            // Up
-            bot.wheel_fl_constraint.configureAngularMotor( 2, 1, 0, 30, 5000 );
-            bot.wheel_fr_constraint.configureAngularMotor( 2, 1, 0, 30, 5000 );
-            bot.wheel_fl_constraint.enableAngularMotor( 2 );
-            bot.wheel_fr_constraint.enableAngularMotor( 2 );
+        case 38: // forward
+            input.power = true;
+            break;
+
+        case 68:
+        case 39: // right
+            input.direction = -1;
             break;
 
         case 83:
-        case 40:
-            // Down
-            bot.wheel_fl_constraint.configureAngularMotor( 2, 1, 0, -30, 5000 );
-            bot.wheel_fr_constraint.configureAngularMotor( 2, 1, 0, -30, 5000 );
-            bot.wheel_fl_constraint.enableAngularMotor( 2 );
-            bot.wheel_fr_constraint.enableAngularMotor( 2 );
+        case 40: // back
+            input.power = false;
             break;
     }
 };
 
-function bot_keyup (bot, ev) {
-    switch( ev.keyCode ) {
-
+function bot_keyup (ev, input) {
+    switch ( ev.keyCode ) {
         case 65:
-        case 37:
-            // Left
-            bot.wheel_fl_constraint.disableAngularMotor( 2 );
-            bot.wheel_fr_constraint.disableAngularMotor( 2 );
-            break;
-
-        case 68:
-        case 39:
-            // Right
-            bot.wheel_fl_constraint.disableAngularMotor( 2 );
-            bot.wheel_fr_constraint.disableAngularMotor( 2 );
+        case 37: // left
+            input.direction = null;
             break;
 
         case 87:
-        case 38:
-            // Up
-            bot.wheel_fl_constraint.disableAngularMotor( 2 );
-            bot.wheel_fr_constraint.disableAngularMotor( 2 );
+        case 38: // forward
+            input.power = null;
+            break;
+
+        case 68:
+        case 39: // right
+            input.direction = null;
             break;
 
         case 83:
-        case 40:
-            // Down
-            bot.wheel_fl_constraint.disableAngularMotor( 2 );
-            bot.wheel_fr_constraint.disableAngularMotor( 2 );
+        case 40: // back
+            input.power = null;
             break;
     }
 }

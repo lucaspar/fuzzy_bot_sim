@@ -27,12 +27,13 @@ function setScene() {
 
 function setLights(scene) {
 
-    let ambientLight    = new THREE.AmbientLight( 0x404040 );
+    let ambientLight    = new THREE.AmbientLight( 0xffffff, 0.4 );
     let envLight        = new THREE.HemisphereLight( 0xccccff, 0xccffcc, 0.3 )
     let light           = new THREE.DirectionalLight( 0xFFFFFF, 1 );
     let helper          = new THREE.CameraHelper( light.shadow.camera );
+    let headlight       = new THREE.SpotLight( 0xFF0000, 1 );
 
-    light.position.set( 90, 90, 0 );
+    light.position.set( -90, 90, -90 );
     light.target.position.copy( scene.position );
     light.castShadow            = true;
     light.shadow.camera.left    = -100;                 // for area of 200 x 200
@@ -44,8 +45,12 @@ function setLights(scene) {
     light.shadow.bias           = -.001
     light.shadow.mapSize.width  = light.shadow.mapSize.height = 4096;
 
+    headlight.position.set( 0,0,5 );
+    headlight.castShadow = false;
+
     scene.add( ambientLight );
     scene.add( light );
+    //scene.add( headlight );
     //scene.add( helper );
     //scene.add( envLight );
 }
@@ -91,9 +96,6 @@ function createGround() {
     );
     ground_material.map.wrapS = ground_material.map.wrapT = THREE.RepeatWrapping;
     ground_material.map.repeat.set( 15, 15 );
-
-    //let hmSource = "scene/s01.bin"
-    //heightMap(hmSource, 1);           // heightMaps not working :/
 
     let noise_gen = new SimplexNoise;
     let ground_geometry = new THREE.PlaneGeometry( 200, 200, 50, 50 );
@@ -248,6 +250,52 @@ function createVehicle() {
 
 //==============================================================================
 
+function createObstacles() {
+
+    const NUM_BOXES = 10;
+
+    let wall_geometry, wall, boxHeight = 5, boxWidth = 2;
+    let wall_material = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        wireframe: false,
+        wireframeLinewidth: 2.0,
+        roughness: 0.5,
+        metalness: 0.5
+    });
+
+    // create random walls
+    for(let ii = 0; ii<NUM_BOXES; ii++){
+        let boxLength = randInt(15, 45);
+        build(boxLength, randInt(-90,90), randInt(-90,90), Math.random() >= 0.5)
+    }
+
+    // create map boundaries
+    build(200, 0, -100);
+    build(200, 0, 100);
+    build(200, -100, 0, true);
+    build(200, 100, 0, true);
+
+    // generate random integer between min and max
+    function randInt(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    // build a box given its length and location
+    function build(boxLength, posX, posZ, rotate=false) {
+        wall_geometry = new THREE.BoxGeometry(boxLength, boxHeight, boxWidth);
+        wall = new Physijs.BoxMesh( wall_geometry, wall_material, 0 );
+        wall.castShadow = true;
+        wall.receiveShadow = true;
+        if(rotate) {
+            wall.rotation.y = Math.PI / -2;
+        }
+        wall.position.set( posX, boxHeight/2, posZ );
+        scene.add(wall);
+    }
+}
+
+//==============================================================================
+
 function createBot() {
 
     let bot_material = Physijs.createMaterial(
@@ -264,14 +312,12 @@ function createBot() {
     );
     let scaleFactor = 1.4;
     let wheel_geometry = new THREE.SphereGeometry( 1.4, 16, 16);
-    let caster_geometry = new THREE.SphereGeometry(1.2, 16, 16);
 
     // Loading bot model from json:
     let json_loader = new THREE.ObjectLoader();
     json_loader.load( "models/bot.json", function( bot, bot_materials ){
 
-        console.log(bot);
-        bot.body = new Physijs.CylinderMesh(
+        let body = new Physijs.CylinderMesh(
             bot.geometry,
             new THREE.MeshStandardMaterial({
                 color: 0x2194ce,
@@ -283,11 +329,11 @@ function createBot() {
         );
 
         let scaleFactor = 1.7;
-        bot.body.scale.set(scaleFactor, scaleFactor, scaleFactor);
-        bot.body.position.y = 5;
-        bot.body.castShadow = bot.body.receiveShadow = true;
+        body.scale.set(scaleFactor, scaleFactor, scaleFactor);
+        body.position.y = 5;
+        body.castShadow = body.receiveShadow = true;
 
-        let vehicle = new Physijs.Vehicle(bot.body, new Physijs.VehicleTuning(
+        let vehicle = new Physijs.Vehicle(body, new Physijs.VehicleTuning(
             100.88,
             10.83,
             0.28,
@@ -296,16 +342,17 @@ function createBot() {
             6000
         ));
 
+
         // Attach cameras to bot
         for (let ii = 0; ii < views.length; ii++){
             if (views[ii].attach) {
-                bot.body.add(views[ii].camera);
+                body.add(views[ii].camera);
             }
         }
 
-        //bot.body.add(headlights);
         scene.add( vehicle );
 
+        // Add wheels
         let dWheel = 2;
         for ( var i = 0; i < 4; i++ ) {
             vehicle.addWheel(wheel_geometry,
@@ -319,7 +366,7 @@ function createBot() {
                 new THREE.Vector3( -1, 0, 0 ),
                 1.4,
                 1.4,
-                i % 2 ? false : true
+                !(i % 2)
             );
         }
 
@@ -329,144 +376,57 @@ function createBot() {
             steering: 0
         };
 
-        scene.addEventListener(
-            'update', function() {
+        scene.addEventListener('update', function() {
+            if(vehicle && vehicle.position){
+                var ray = new THREE.Ray( vehicle.position, new THREE.Vector3(vehicle.position.x, vehicle.position.y, wall.position.z).subSelf( vehicle.position ).normalize() );
+                var intersects = ray.intersectObject( wall );
 
-                if ( input && vehicle ) {
-                    if ( input.direction !== null ) {
-                        input.steering += input.direction / 50;
-                        if ( input.steering < -1 ) input.steering = -1;
-                        if ( input.steering > 1 ) input.steering = 1;
+                if ( intersects.length > 0 ) {
+                    var face = intersects[0].face.d,
+                    dist = intersects[0].distance;
+                    console.log("CRASH!");
+                };
+            }
 
-                        vehicle.applyEngineForce( input.steering*1000, 0 );
-                        vehicle.applyEngineForce( input.steering*1000*-1, 1 );
-                    }
-                    else {
-                        input.steering *= 0.95;
-                        vehicle.applyEngineForce( input.steering*1000, 0);
-                        vehicle.applyEngineForce( input.steering*1000*-1, 1 );
-                    }
+            if ( input && vehicle ) {
+                if ( input.direction !== null ) {
+                    input.steering += input.direction / 50;
+                    if ( input.steering < -1 ) input.steering = -1;
+                    if ( input.steering > 1 ) input.steering = 1;
 
-                    // for steerable wheels:
-                    //vehicle.setSteering( input.steering, 0 );
-                    //vehicle.setSteering( input.steering, 1 );
-
-                    if ( input.power === true ) {
-                        vehicle.applyEngineForce( 100 );
-                    }
-                    else if ( input.power === false ) {
-                        vehicle.applyEngineForce( 0 );
-                        vehicle.setBrake( 10 );
-                    }
-
-                    else if (input.direction === null && input.power === null) {
-                        vehicle.applyEngineForce( 0 );
-                        vehicle.setBrake( 0 );
-                    }
+                    vehicle.applyEngineForce( input.steering*1000, 0 );
+                    vehicle.applyEngineForce( input.steering*1000*-1, 1 );
+                }
+                else {
+                    input.steering *= 0.95;
+                    vehicle.applyEngineForce( input.steering*1000, 0);
+                    vehicle.applyEngineForce( input.steering*1000*-1, 1 );
                 }
 
-                scene.simulate( undefined, 5 );
+                // for steerable wheels:
+                //vehicle.setSteering( input.steering, 0 );
+                //vehicle.setSteering( input.steering, 1 );
+
+                if ( input.power === true ) {
+                    vehicle.applyEngineForce( 100 );
+                }
+                else if ( input.power === false ) {
+                    vehicle.applyEngineForce( 0 );
+                    vehicle.setBrake( 10 );
+                }
+
+                else if (input.direction === null && input.power === null) {
+                    vehicle.applyEngineForce( 0 );
+                    vehicle.setBrake( 0 );
+                }
             }
-        );
 
-        document.addEventListener('keydown', function( ev ) {
-            switch ( ev.keyCode ) {
-                case 37: // left
-                input.direction = 1;
-                break;
+            scene.simulate( undefined, 5 );
 
-                case 38: // forward
-                input.power = true;
-                break;
-
-                case 39: // right
-                input.direction = -1;
-                break;
-
-                case 40: // back
-                input.power = false;
-                break;
-            }
-        });
-        document.addEventListener('keyup', function( ev ) {
-            switch ( ev.keyCode ) {
-                case 37: // left
-                input.direction = null;
-                break;
-
-                case 38: // forward
-                input.power = null;
-                break;
-
-                case 39: // right
-                input.direction = null;
-                break;
-
-                case 40: // back
-                input.power = null;
-                break;
-            }
         });
 
-        /*
-        bot.wheel_fl = new Physijs.CylinderMesh(
-            wheel_geometry,
-            wheel_material,
-            1000
-        );
-        bot.wheel_fl.rotation.x = Math.PI / 2;
-        bot.wheel_fl.position.set( 0, 7.5, 5.5 );
-        bot.wheel_fl.receiveShadow = bot.wheel_fl.castShadow = true;
-        scene.add( bot.wheel_fl );
-
-        bot.wheel_fl_constraint = new Physijs.DOFConstraint(
-            bot.wheel_fl, bot.body, new THREE.Vector3( 0, 7.5, 5.5 )
-        );
-        scene.addConstraint( bot.wheel_fl_constraint );
-        bot.wheel_fl_constraint.setAngularLowerLimit({ x: 0, y: 0, z: 1 });
-        bot.wheel_fl_constraint.setAngularUpperLimit({ x: 0, y: 0, z: 0 });
-
-        bot.wheel_fr = new Physijs.CylinderMesh(
-            wheel_geometry,
-            wheel_material,
-            500
-        );
-        bot.wheel_fr.rotation.x = Math.PI / 2;
-        bot.wheel_fr.position.set( 0, 7.5, -5.5 );
-        bot.wheel_fr.receiveShadow = bot.wheel_fr.castShadow = true;
-        scene.add( bot.wheel_fr );
-
-        bot.wheel_fr_constraint = new Physijs.DOFConstraint(
-            bot.wheel_fr, bot.body, new THREE.Vector3( 0, 7.5, -5.5 )
-        );
-        scene.addConstraint( bot.wheel_fr_constraint );
-
-        bot.wheel_fr_constraint.setAngularLowerLimit({ x: 0, y: 0, z: 1 });
-        bot.wheel_fr_constraint.setAngularUpperLimit({ x: 0, y: 0, z: 0 });
-
-        bot.wheel_caster = new Physijs.CylinderMesh(
-            caster_geometry,
-            wheel_material,
-            500
-        );
-        bot.wheel_caster.rotation.x = Math.PI / 2;
-        bot.wheel_caster.position.set( 4.5, 7.5, 0 );
-        bot.wheel_caster.receiveShadow = bot.wheel_caster.castShadow = true;
-        scene.add( bot.wheel_caster );
-
-        bot.wheel_caster_constraint = new Physijs.DOFConstraint(
-            bot.wheel_caster, bot.body, new THREE.Vector3( 2.5, 7.5, 0 )
-        );
-        scene.addConstraint( bot.wheel_caster_constraint );
-
-        bot.wheel_caster_constraint.setAngularLowerLimit({ x: 0, y: 0, z: 0 });
-        bot.wheel_caster_constraint.setAngularUpperLimit({ x: 0, y: 0, z: 0 });
-
-
-        // Controls / user interaction
-        document.addEventListener('keydown', function(ev) { bot_keydown(bot, ev) });
-        document.addEventListener('keyup',   function(ev) {   bot_keyup(bot, ev) });
-        */
+        document.addEventListener('keydown', function(ev) { bot_keydown(ev, input); } );
+        document.addEventListener('keyup',   function(ev) {   bot_keyup(ev, input); } );
     });
 }
 

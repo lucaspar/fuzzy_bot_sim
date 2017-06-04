@@ -1,0 +1,99 @@
+[{
+	"name": "Back view",
+	"attach": true,
+	"boundaries": {
+		"left": 0,
+		"bottom": 0,
+		"width": 0.7,
+		"height": 1
+	},
+	"fov": 60,
+	"background": 8355762,
+	"position": {
+		"x": 0,
+		"y": 3,
+		"z": -10
+	},
+	"camera": {
+		"object": {
+			"uuid": "19E69FDB-FF53-41CD-A31F-103F9B7B423D",
+			"type": "PerspectiveCamera",
+			"matrix": [-0.9999999999999998, 0, 0, 0, 0, 0.9578262852211514, 0.2873478855663454, 0, 0, 0.2873478855663454, -0.9578262852211512, 0, 0, 3, -10, 1],
+			"fov": 60,
+			"zoom": 1,
+			"near": 1,
+			"far": 10000,
+			"focus": 10,
+			"aspect": 1.9145299145299146,
+			"filmGauge": 35,
+			"filmOffset": 0
+		}
+	}
+}, {
+	"name": "Isometric view",
+	"attach": false,
+	"boundaries": {
+		"left": 0.7,
+		"bottom": 0.5,
+		"width": 0.3,
+		"height": 0.5
+	},
+	"fov": 60,
+	"background": 8368818,
+	"position": {
+		"x": -100,
+		"y": 30,
+		"z": -100
+	},
+	"projection": "perspective",
+	"camera": {
+		"object": {
+			"uuid": "1E1B7342-2F9C-4796-B13F-D6800DFA56FE",
+			"type": "PerspectiveCamera",
+			"matrix": [-0.7071067811865475, -1.3877787807814457e-17, 0.7071067811865475, 0, 0.14673479641335552, 0.978231976089037, 0.14673479641335552, 0, -0.6917144638660746, 0.20751433915982237, -0.6917144638660746, 0, -100, 30, -100, 1],
+			"fov": 60,
+			"zoom": 1,
+			"near": 1,
+			"far": 10000,
+			"focus": 10,
+			"aspect": 1.641025641025641,
+			"filmGauge": 35,
+			"filmOffset": 0
+		}
+	}
+}, {
+	"name": "Top view",
+	"attach": false,
+	"boundaries": {
+		"left": 0.7,
+		"bottom": 0,
+		"width": 0.3,
+		"height": 0.5
+	},
+	"background": 11698047,
+	"position": {
+		"x": 1,
+		"y": 100,
+		"z": 0
+	},
+	"projection": "ortho",
+	"frustrum": {
+		"w": 510,
+		"h": 510
+	},
+	"zoom": 5,
+	"camera": {
+		"object": {
+			"uuid": "6C9C0B1A-23E7-4B44-8F4F-E4BA2796BEFF",
+			"type": "OrthographicCamera",
+			"matrix": [-2.220446049250313e-16, -1.1102230246251565e-16, -1, 0, -0.9999500037496877, 0.009999500037496611, 1.1102230246251565e-16, 0, 0.009999500037496722, 0.9999500037496877, -2.220446049250313e-16, 0, 1, 100, 0, 1],
+			"zoom": 5,
+			"left": -510,
+			"right": 510,
+			"top": 510,
+			"bottom": -510,
+			"near": 0,
+			"far": 10000
+		}
+	}
+}]
