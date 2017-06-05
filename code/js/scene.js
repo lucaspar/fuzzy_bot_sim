@@ -1,7 +1,7 @@
 'use strict';
 
 function setRenderer() {
-    renderer = new THREE.WebGLRenderer({ antialias: false });
+    renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setClearColor( 0xdddddd );
     renderer.setSize( window.innerWidth, 600 );
     renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
@@ -12,46 +12,45 @@ function setRenderer() {
 //==============================================================================
 
 function setScene() {
+
     scene = new Physijs.Scene;
+    scene.addEventListener('update', function(ev) { update(); } );
     scene.setGravity(new THREE.Vector3( 0, -98, 0 ));
-    scene.addEventListener(
-        'update',
-        function() {
-            scene.simulate( undefined, 2 );
-        }
-    );
-    setLights(scene);
+    scene.simulate();
+
+    if (collidableMeshList === undefined){   collidableMeshList = [];   }
+    if (projections === undefined) {         projections = [];          }
+
 }
 
 //==============================================================================
 
-function setLights(scene) {
+function setLights() {
 
     let ambientLight    = new THREE.AmbientLight( 0xffffff, 0.4 );
-    let envLight        = new THREE.HemisphereLight( 0xccccff, 0xccffcc, 0.3 )
-    let light           = new THREE.DirectionalLight( 0xFFFFFF, 1 );
-    let helper          = new THREE.CameraHelper( light.shadow.camera );
     let headlight       = new THREE.SpotLight( 0xFF0000, 1 );
+    let sun             = new THREE.DirectionalLight( 0xFFFFFF, 1 );
+    let helper          = new THREE.CameraHelper( sun.shadow.camera );
 
-    light.position.set( -90, 90, -90 );
-    light.target.position.copy( scene.position );
-    light.castShadow            = true;
-    light.shadow.camera.left    = -100;                 // for area of 200 x 200
-    light.shadow.camera.top     = -100;
-    light.shadow.camera.right   = 100;
-    light.shadow.camera.bottom  = 100;
-    light.shadow.camera.near    = 20;
-    light.shadow.camera.far     = 200;
-    light.shadow.bias           = -.001
-    light.shadow.mapSize.width  = light.shadow.mapSize.height = 4096;
+    sun.position.set( -90, 90, -90 );
+    sun.target                  = scene;
+    sun.castShadow              = true;
+    sun.shadow.camera.left      = -142;     // 142 ~ 100 * sqrt(2): for area of 200 x 200
+    sun.shadow.camera.top       = -142;
+    sun.shadow.camera.right     = 142;
+    sun.shadow.camera.bottom    = 142;
+    sun.shadow.camera.near      = 0;
+    sun.shadow.camera.far       = 300;
+    sun.shadow.bias             = -.001
+    sun.shadow.mapSize.width    = sun.shadow.mapSize.height = 4096;
 
     headlight.position.set( 0,0,5 );
     headlight.castShadow = false;
 
+    scene.add( sun );
     scene.add( ambientLight );
-    scene.add( light );
-    //scene.add( headlight );
     //scene.add( helper );
+    //scene.add( headlight );
     //scene.add( envLight );
 }
 
@@ -81,6 +80,8 @@ function setCameras() {
     }
 }
 
+//==============================================================================
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //==============================================================================
 
 function createGround() {
@@ -117,12 +118,16 @@ function createGround() {
     ground.receiveShadow = true;
 
     scene.add( ground );
+    collidableMeshList.push( ground );
 }
 
 //==============================================================================
 
 function createVehicle() {
 
+    console.log("Refactor me, please");
+
+    /*
     let car_material = Physijs.createMaterial(
         new THREE.MeshLambertMaterial({ color: 0xff6666 }),
         1.0,    // friction
@@ -246,6 +251,7 @@ function createVehicle() {
         document.addEventListener('keydown', function(ev) { keydown(car, ev) });
         document.addEventListener('keyup',   function(ev) {   keyup(car, ev) });
     });
+    */
 }
 
 //==============================================================================
@@ -308,18 +314,18 @@ function createBot() {
 
     let wheel_material = Physijs.createMaterial(
         new THREE.MeshLambertMaterial({ wireframe: true,
-        wireframeLinewidth: 1.5, color: 0x444444 }),
-        4.0,    // friction
+        wireframeLinewidth: 3, color: 0x444444 }),
+        2.0,    // friction
         0.1     // restitution
     );
     let scaleFactor = 1.4;
-    let wheel_geometry = new THREE.SphereGeometry( 1.4, 16, 16);
+    let wheel_geometry = new THREE.SphereGeometry( 1.0, 16, 16);
 
-    // Loading bot model from json:
+    // load bot model from json:
     let json_loader = new THREE.ObjectLoader();
     json_loader.load( "models/bot.json", function( bot, bot_materials ){
 
-        let body = new Physijs.CylinderMesh(
+        body = new Physijs.CylinderMesh(
             bot.geometry,
             new THREE.MeshStandardMaterial({
                 color: 0x2194ce,
@@ -330,12 +336,12 @@ function createBot() {
             50
         );
 
-        let scaleFactor = 1.7;
+        let scaleFactor = 1.5;
         body.scale.set(scaleFactor, scaleFactor, scaleFactor);
         body.position.y = 5;
         body.castShadow = body.receiveShadow = true;
 
-        let vehicle = new Physijs.Vehicle(body, new Physijs.VehicleTuning(
+        vehicle = new Physijs.Vehicle(body, new Physijs.VehicleTuning(
             100.88,
             10.83,
             0.28,
@@ -344,8 +350,7 @@ function createBot() {
             6000
         ));
 
-
-        // Attach cameras to bot
+        // attach cameras to bot
         for (let ii = 0; ii < views.length; ii++){
             if (views[ii].attach) {
                 body.add(views[ii].camera);
@@ -354,7 +359,7 @@ function createBot() {
 
         scene.add( vehicle );
 
-        // Add wheels
+        // add wheels
         let dWheel = 2;
         for ( var i = 0; i < 4; i++ ) {
             vehicle.addWheel(wheel_geometry,
@@ -372,118 +377,49 @@ function createBot() {
             );
         }
 
-        let input = {
+        input = {
             power: null,
             direction: null,
             steering: 0
         };
 
-        let sphereGeometry = new THREE.SphereGeometry( 0.8, 32, 32 );
-        let sphereMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, shading: THREE.FlatShading } );
-
-        for ( let i = 0; i < 5; i++ ) {
-            let sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
-            scene.add( sphere );
-            spheres.push( sphere );
-        }
-
-        scene.addEventListener('update', function() {
-
-            var rotationMatrix = new THREE.Matrix4();
-            var direction = new THREE.Vector3( 0, 0, 1 );
-
-            rotationMatrix.extractRotation( body.matrix );
-            direction.applyMatrix4( rotationMatrix );
-
-            raycaster.set( body.position, direction );
-            console.log(body.rotation.x);
-
-			let intersections = raycaster.intersectObjects( collidableMeshList );
-			let intersection = ( intersections.length ) > 0 ? intersections[ 0 ] : null;
-
-            //console.log(intersection);
-
-            if ( intersection !== null ) {
-                spheres[ spheresIndex ].position.copy( intersection.point );
-                spheres[ spheresIndex ].scale.set( 1, 1, 1 );
-                spheresIndex = ( spheresIndex + 1 ) % spheres.length;
-            }
-
-            for ( var i = 0; i < spheres.length; i++ ) {
-                var sphere = spheres[ i ];
-                sphere.scale.multiplyScalar( 0.98 );
-                sphere.scale.clampScalar( 0.01, 1 );
-            }
-
-
-            if ( input && vehicle ) {
-                if ( input.direction !== null ) {
-                    input.steering += input.direction / 50;
-                    if ( input.steering < -1 ) input.steering = -1;
-                    if ( input.steering > 1 ) input.steering = 1;
-
-                    vehicle.applyEngineForce( input.steering*1000, 0 );
-                    vehicle.applyEngineForce( input.steering*1000*-1, 1 );
-                }
-                else {
-                    input.steering *= 0.95;
-                    vehicle.applyEngineForce( input.steering*1000, 0);
-                    vehicle.applyEngineForce( input.steering*1000*-1, 1 );
-                }
-
-                // for steerable wheels:
-                //vehicle.setSteering( input.steering, 0 );
-                //vehicle.setSteering( input.steering, 1 );
-
-                if ( input.power === true ) {
-                    vehicle.setBrake( 0 );
-                    vehicle.applyEngineForce( 100 );
-                }
-                else if ( input.power === false ) {
-                    vehicle.applyEngineForce( 0 );
-                    vehicle.setBrake( 10 );
-                }
-
-                else if (input.direction === null && input.power === null) {
-                    vehicle.applyEngineForce( 0 );
-                }
-            }
-
-            scene.simulate( undefined, 5 );
-
-        });
-
-        document.addEventListener('keydown', function(ev) { bot_keydown(ev, input); } );
-        document.addEventListener('keyup',   function(ev) {   bot_keyup(ev, input); } );
+        document.addEventListener('keydown', function(ev) { bot_keydown(ev); } );
+        document.addEventListener('keyup',   function(ev) {   bot_keyup(ev); } );
     });
 }
 
 //==============================================================================
 
-function createText() {
+function createSensors(visible = true) {
 
-    const CLASS_NAME = "view-title";
-    const PX = "px";
+    const TRACE_LENGTH  = 5;
 
-    let canvas          = $('#canvas')
-    let canvas_height   = canvas.height();
-    let canvas_width    = canvas.width();
+    raycaster = new THREE.Raycaster();
+    raycaster.params.Points.threshold = 0.1;
 
-    // remove all titles if any (used for window size changes)
-    $("." + CLASS_NAME).remove();
+    sensors = [];
+    let sensorsDir = []
+    sensorsDir.push( new THREE.Vector3( 1, 0, 1 ).normalize() );    // 45deg left
+    sensorsDir.push( new THREE.Vector3( 0, 0, 1 ).normalize() );    // ahead
+    sensorsDir.push( new THREE.Vector3( -1, 0, 1 ).normalize() );   // 45deg right
 
-    // create titles
-    for (let ii = 0; ii < views.length; ++ii ) {
-        let view = views[ii];
-
-        let base_height = 20, base_width = 0;
-        var cam_title = document.createElement('div');
-        cam_title.innerHTML = view.name || "Camera #" + (ii+1);
-        cam_title.className = CLASS_NAME;
-        cam_title.style.position = 'absolute';
-        cam_title.style.bottom = view.boundaries.bottom * canvas_height + base_height + PX;
-        cam_title.style.left = view.boundaries.left * canvas_width + base_width + PX;
-
-        canvas.append(cam_title);
+    for (let k=0; k<sensorsDir.length; k++) {
+        sensors[k] = {
+            id:         k,
+            direction:  sensorsDir[k],
+            distance:   null
+        }
     }
+
+    if (visible) {
+        let projectionGeometry = new THREE.SphereGeometry( 0.8, 32, 32 );
+        let projectionMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, shading: THREE.FlatShading } );
+
+        for ( let i = 0; i < TRACE_LENGTH * sensors.length; i++ ) {
+            let projection = new THREE.Mesh( projectionGeometry, projectionMaterial );
+            scene.add( projection );
+            projections.push( projection );
+        }
+    }
+
 }

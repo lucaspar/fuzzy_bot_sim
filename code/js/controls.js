@@ -80,7 +80,7 @@ function car_keyup (car, ev) {
 //==============================================================================
 
 // Bot controls
-function bot_keydown (ev, input) {
+function bot_keydown (ev) {
     switch ( ev.keyCode ) {
         case 65:
         case 37: // left
@@ -104,7 +104,7 @@ function bot_keydown (ev, input) {
     }
 };
 
-function bot_keyup (ev, input) {
+function bot_keyup (ev) {
     switch ( ev.keyCode ) {
         case 65:
         case 37: // left

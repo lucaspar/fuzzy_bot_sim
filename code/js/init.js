@@ -1,12 +1,11 @@
 'use strict';
 
 Physijs.scripts.worker = 'js/physijs/physijs_worker.js'
-let windowWidth, windowHeight, mouseX, mouseY;
-let renderer, scene, stats, camera, views;
-let collidableMeshList = [], spheres = [], spheresIndex = 0;
 
-let raycaster = new THREE.Raycaster();
-raycaster.params.Points.threshold = 0.1;
+let windowWidth, windowHeight, mouseX, mouseY;                  // window
+let renderer, scene, stats, camera, views;                      // scene
+let collidableMeshList, projections, projectionsIndex, body;    // physics
+let input, sensors, vehicle, raycaster;                         // control
 
 //==============================================================================
 
@@ -14,57 +13,40 @@ function init() {
 
     stats = new Stats();
 
-    setRenderer();
-    setScene();
-    setCameras();
+    setRenderer();              // canvas renderer, antialias, canvas dimensions
+    setScene();                 // scene, gravity, init vars
+    setLights();                // sun, ambient light
+    setCameras();               // set cameras from views.json
 
-    createGround();
-    createObstacles();
-    //createVehicle();
-    createBot();
-    createText();
+    createGround();             // solid ground with height and texture
+    createObstacles();          // random solid boxes and map boundaries
+    createBot();                // drivable bot
+    createSensors();            // sensors and visualization
 
     let container = document.getElementById( 'canvas' )
     container.appendChild( renderer.domElement );
     container.appendChild( stats.dom );
 
-    scene.simulate();
     animate();
 
 };
 
 //==============================================================================
 
-function updateSize() {
-    if ( windowWidth != window.innerWidth || windowHeight != window.innerHeight-100 ) {
-        windowWidth  = window.innerWidth;
-    	windowHeight = window.innerHeight-100;
-    	renderer.setSize ( windowWidth, windowHeight );
-
-        createText();       // update screen text for new position
-    }
-}
-
-//==============================================================================
-
-function animate (delta, renderer) {
-    render();
+function animate() {
+    updateWindowSize();
+    renderScenes();
     stats.update();
     requestAnimationFrame( animate );
 };
 
 //==============================================================================
 
-function render() {
-
-    updateSize();
-
+function renderScenes() {
     for ( let ii = 0; ii < views.length; ++ii ) {
 
         let view = views[ii];
         camera = view.camera;
-
-        //console.log(scene.getObjectByName( 'bot', true ))
 
         let left   = Math.floor( windowWidth  * view.boundaries.left );
         let bottom = Math.floor( windowHeight * view.boundaries.bottom );
