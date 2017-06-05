@@ -1,9 +1,14 @@
 
 function update() {
 
+    clock++;
+
     updateSensors();
     updateControl();
-    updateText();
+
+    if (clock%20 == 0) {
+        updateText();
+    }
 
     scene.simulate( undefined, 3 );
 
@@ -94,30 +99,65 @@ function updateControl () {
 
 function updateText() {
 
-    const CLASS_NAME = "view-title";
-    const PX = "px";
+    const VIEW_CLASS        = "view-title";
+    const SENSORS_CLASS     = "sim-data"
+    const PX                = "px";
+    const base_height       = 50
+    const base_width        = 0;
 
     let canvas          = $('#canvas')
     let canvas_height   = canvas.height();
     let canvas_width    = canvas.width();
 
     // remove all titles if any (used for window size changes)
-    $("." + CLASS_NAME).remove();
+    let view_title      = $("." + VIEW_CLASS);
+    let sensor_data     = $("." + SENSORS_CLASS);
 
-    // create titles
-    for (let ii = 0; ii < views.length; ++ii ) {
-        let view = views[ii];
+    if (view_title.length == 0) {
 
-        let base_height = 20, base_width = 0;
-        var cam_title = document.createElement('div');
-        cam_title.innerHTML = view.name || "Camera #" + (ii+1);
-        cam_title.className = CLASS_NAME;
-        cam_title.style.position = 'absolute';
-        cam_title.style.bottom = view.boundaries.bottom * canvas_height + base_height + PX;
-        cam_title.style.left = view.boundaries.left * canvas_width + base_width + PX;
-
-        canvas.append(cam_title);
+        // create view titles
+        for (let ii = 0; ii < views.length; ++ii ) {
+            let view = views[ii];
+            view_title = $('<div></div>');
+            view_title.addClass(VIEW_CLASS);
+            view_title.css({
+                position: 'absolute',
+                bottom: view.boundaries.bottom * canvas_height + base_height + PX,
+                left: view.boundaries.left * canvas_width + base_width + PX
+            });
+            canvas.append(view_title);
+        }
     }
+
+    // update view titles
+    if (clock%60 == 0) {
+        for (let ii = 0; ii < views.length; ++ii ) {
+            let view = views[ii];
+            let title = view.name || "Camera #" + (ii+1);
+            if(view_title[ii]){
+                view_title[ii].innerHTML = title;
+            }
+        }
+    }
+
+    if(sensor_data.length == 0) {
+        sensor_data = $('<div></div>');
+        sensor_data.addClass(SENSORS_CLASS);
+        sensor_data.css({
+            position: 'absolute',
+            top: 50 + PX
+        });
+        canvas.append(sensor_data);
+    }
+
+    // update sensors data
+    let data = "<p>ENVIRONMENT DATA:</p>";
+    for (let k=0; k<sensors.length; k++) {
+        let s = sensors[k];
+        data += s.type + " sensor #" + sensors[k].id + ": " + Math.floor(sensors[k].distance) + "<br>";
+    }
+    sensor_data.each(function(){$(this).html(data);});
+
 }
 
 //==============================================================================
@@ -127,5 +167,6 @@ function updateWindowSize() {
         windowWidth  = window.innerWidth;
     	windowHeight = window.innerHeight-100;
     	renderer.setSize ( windowWidth, windowHeight );
+        $(".view-title").remove();
     }
 }

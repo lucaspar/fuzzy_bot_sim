@@ -407,7 +407,8 @@ function createSensors(visible = true) {
         sensors[k] = {
             id:         k,
             direction:  sensorsDir[k],
-            distance:   null
+            distance:   null,
+            type:       "IR"
         }
     }
 

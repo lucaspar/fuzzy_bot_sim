@@ -5,7 +5,7 @@ Physijs.scripts.worker = 'js/physijs/physijs_worker.js'
 let windowWidth, windowHeight, mouseX, mouseY;                  // window
 let renderer, scene, stats, camera, views;                      // scene
 let collidableMeshList, projections, projectionsIndex, body;    // physics
-let input, sensors, vehicle, raycaster;                         // control
+let clock, input, sensors, vehicle, raycaster;                  // control
 
 //==============================================================================
 
@@ -27,6 +27,7 @@ function init() {
     container.appendChild( renderer.domElement );
     container.appendChild( stats.dom );
 
+    clock = 0;
     animate();
 
 };
