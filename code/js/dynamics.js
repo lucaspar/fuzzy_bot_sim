@@ -10,6 +10,8 @@ function update() {
         updateText();
     }
 
+    autoDrive();
+
     scene.simulate( undefined, 3 );
 
 }
@@ -39,7 +41,7 @@ function updateSensors () {
 
         // update sensor projections
         if ( intersection ) {
-            sensors[k].distance = intersection.distance;
+            sensors[k].distance = intersection.distance * 1.5;
 
             projections[ projectionsIndex ].position.copy( intersection.point );
             projections[ projectionsIndex ].scale.set( 1, 1, 1 );
@@ -60,19 +62,23 @@ function updateSensors () {
 
 function updateControl () {
 
+    const TURNING_FORCE = 400;
+
     if ( input && vehicle ) {
         if ( input.direction !== null ) {
             input.steering += input.direction / 50;
             if ( input.steering < -1 ) input.steering = -1;
             if ( input.steering > 1 ) input.steering = 1;
 
-            vehicle.applyEngineForce( input.steering*1000, 0 );
-            vehicle.applyEngineForce( input.steering*1000*-1, 1 );
+            let effective_turning = TURNING_FORCE * input.steering;
+
+            vehicle.applyEngineForce( effective_turning, 0 );
+            vehicle.applyEngineForce( -effective_turning, 1 );
         }
         else {
             input.steering *= 0.95;
-            vehicle.applyEngineForce( input.steering*1000, 0);
-            vehicle.applyEngineForce( input.steering*1000*-1, 1 );
+            vehicle.applyEngineForce( effective_turning, 0);
+            vehicle.applyEngineForce( -effective_turning, 1 );
         }
 
         // for steerable wheels:
@@ -81,13 +87,12 @@ function updateControl () {
 
         if ( input.power === true ) {
             vehicle.setBrake( 0 );
-            vehicle.applyEngineForce( 100 );
+            vehicle.applyEngineForce( 10 );
         }
         else if ( input.power === false ) {
             vehicle.applyEngineForce( 0 );
-            vehicle.setBrake( 10 );
+            vehicle.setBrake( 3 );
         }
-
         else if (input.direction === null && input.power === null) {
             vehicle.applyEngineForce( 0 );
         }
@@ -156,6 +161,15 @@ function updateText() {
         let s = sensors[k];
         data += s.type + " sensor #" + sensors[k].id + ": " + Math.floor(sensors[k].distance) + "<br>";
     }
+    let arrow = "";
+    switch(fuzzyDir) {
+        case -30: arrow = "&lt--"; break;
+        case -15: arrow = "&lt-"; break;
+        case 0: arrow = "/\\"; break;
+        case 15: arrow = "-&gt"; break;
+        case 30: arrow = "--&gt"; break;
+    }
+    data += "<br>Fuzzy output: " + fuzzyDir + " " + arrow;
     sensor_data.each(function(){$(this).html(data);});
 
 }

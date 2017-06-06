@@ -258,9 +258,9 @@ function createVehicle() {
 
 function createObstacles() {
 
-    const NUM_BOXES = 10;
+    const NUM_BOXES = 20;
 
-    let wall_geometry, wall, boxHeight = 5, boxWidth = 2;
+    let wall_geometry, wall, boxHeight = 5, boxWidth = 4;
     let wall_material = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         wireframe: false,
@@ -385,6 +385,8 @@ function createBot() {
 
         document.addEventListener('keydown', function(ev) { bot_keydown(ev); } );
         document.addEventListener('keyup',   function(ev) {   bot_keyup(ev); } );
+
+        autoDrive();        // autonomous drive
     });
 }
 

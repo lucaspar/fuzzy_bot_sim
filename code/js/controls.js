@@ -127,3 +127,46 @@ function bot_keyup (ev) {
             break;
     }
 }
+
+
+//==============================================================================
+
+function autoDrive() {
+
+    function getModule(v) { return Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z); }
+
+    let speed = body.getLinearVelocity();
+    let speedVal = getModule(speed);
+    let maxSpeed = 5;
+    let minSpeed = 1.7;
+    //console.log("Speed: " + speedVal);
+
+    let distances = [ sensors[0].distance, sensors[1].distance, sensors[2].distance ];
+    fuzzyDir = fuzzy(distances);
+
+    if (speedVal < maxSpeed ) {
+        input.power = null;
+    }
+    if (speedVal < minSpeed) {
+        input.power = true;
+    }
+    else if (speedVal > maxSpeed) {
+        input.power = false;
+    }
+    if (fuzzyDir == 0) {                // go straight
+        input.direction = 0;
+        input.power = true;
+    }
+    else if (fuzzyDir < 0) {            // turn left
+        if (speedVal > maxSpeed) {      // break if too fast
+            input.power = false;
+        }
+        input.direction = 1;
+    }
+    else if (fuzzyDir > 0) {
+        if (fuzzyDir > 20 && speedVal > maxSpeed) {
+            input.power = false;
+        }
+        input.direction = -1;
+    }
+}
