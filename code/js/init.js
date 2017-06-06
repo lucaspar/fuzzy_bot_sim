@@ -65,11 +65,3 @@ function renderScenes() {
         renderer.render( scene, camera );
     }
 }
-
-//==============================================================================
-
-// START:
-$.getJSON('js/views.json', function(response){
-    views = response;
-    window.onload = init;
- })

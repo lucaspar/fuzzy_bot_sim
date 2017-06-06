@@ -65,12 +65,15 @@ function updateControl () {
     const TURNING_FORCE = 400;
 
     if ( input && vehicle ) {
+
+        let effective_turning = TURNING_FORCE * input.steering;
+
         if ( input.direction !== null ) {
             input.steering += input.direction / 50;
             if ( input.steering < -1 ) input.steering = -1;
             if ( input.steering > 1 ) input.steering = 1;
 
-            let effective_turning = TURNING_FORCE * input.steering;
+            effective_turning = TURNING_FORCE * input.steering;
 
             vehicle.applyEngineForce( effective_turning, 0 );
             vehicle.applyEngineForce( -effective_turning, 1 );

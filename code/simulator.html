@@ -21,7 +21,7 @@
 
 </body>
 
-<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script>
 
@@ -39,7 +39,11 @@
 
 <script src="js/fuzzy.js"></script>
 <script>
-    fuzzy([255,60,70]);
+    // START:
+    $.getJSON('js/views.json', function(response){
+        views = response;
+        window.onload = init;
+    });
 </script>
 
 </html>
