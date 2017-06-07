@@ -1,9 +1,7 @@
-Simulador de um sistema robótico baseado em lógica fuzzy
+[Simulador de um Robô Controlado por Lógica Fuzzy](https://github.com/lucaspar/fuzzy_bot_sim)
 ===
 
 Este código consiste em uma simulação de um sistema de lógica fuzzy construída em JavaScript capaz de executar em um navegador com suporte a HTML5 e, idealmente, em uma máquina com uma unidade de processamento gráfico.
-
----
 
 ### Dependências ###
 
