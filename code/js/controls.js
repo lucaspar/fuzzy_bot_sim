@@ -144,26 +144,31 @@ function autoDrive() {
     let distances = [ sensors[0].distance, sensors[1].distance, sensors[2].distance ];
     fuzzyDir = fuzzy(distances);
 
-    if (speedVal < maxSpeed ) {
-        input.power = null;
-    }
-    if (speedVal < minSpeed) {
-        input.power = true;
-    }
-    else if (speedVal > maxSpeed) {
+    // SPEED EVAL
+    if (speedVal > maxSpeed) {          // too fast, hit the brakes
         input.power = false;
     }
+    else if (speedVal < minSpeed) {     // too slow, step on the gas
+        input.power = true;
+    }
+    else if (speedVal < maxSpeed ) {    // keep going
+        input.power = null;
+    }
+
+    // FUZZY EVAL
     if (fuzzyDir == 0) {                // go straight
         input.direction = 0;
         input.power = true;
     }
     else if (fuzzyDir < 0) {            // turn left
-        if (speedVal > maxSpeed) {      // break if too fast
+        // break before sharp turns if too fast:
+        if (fuzzyDir < -20 && speedVal > maxSpeed) {
             input.power = false;
         }
         input.direction = 1;
     }
-    else if (fuzzyDir > 0) {
+    else if (fuzzyDir > 0) {            // turn right
+        // break before sharp turns if too fast:
         if (fuzzyDir > 20 && speedVal > maxSpeed) {
             input.power = false;
         }

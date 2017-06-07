@@ -5,63 +5,35 @@ function fuzzy(sensors) {
 
     const MP = 0, P = 1, L = 2, ML = 3;                 // distance (inputs)
     const ME = -30, E = -15, R = 0, D = 15, MD = 30;    // angle    (outputs)
-    //const ME = 0, E = 1, R = 2, D = 3, MD = 4;        // angle    (outputs)
 
     const NUM_INPUT_CURVES = 4;                         // number of input curves
     const rules =                                       // set of rules
-    /*[
-        [                       // ORIGINAL
-            [MD,D,D,MD],
-            [R,D,D,MD],
-            [R,R,D,MD],
-            [R,D,D,MD]
-        ],
         [
-            [ME,D,D,MD],
-            [E,D,D,MD],
-            [E,R,D,D],
-            [R,R,D,D]
-        ],
-        [
-            [E,E,MD,MD],
-            [E,E,D,D],
-            [ME,MD,R,R],
-            [ME,E,R,R]
-        ],
-        [
-            [ME,ME,ME,MD],
-            [E,E,E,D],
-            [ME,E,R,R],
-            [ME,E,R,R]
-        ]
-    ];*/
-
-    [                           // FIRST CHANGE
-        [
-            [MD,D,D,MD],
-            [R,D,D,MD],
-            [R,D,D,MD],
-            [R,D,D,MD]
-        ],
-        [
-            [ME,D,D,MD],
-            [E,D,D,MD],
-            [E,R,D,D],
-            [E,R,D,D]
-        ],
-        [
-            [ME,E,MD,MD],
-            [E,E,D,D],
-            [ME,ME,R,R],
-            [ME,E,R,R]
-        ],
-        [
-            [ME,ME,ME,MD],
-            [E,E,E,D],
-            [ME,E,R,R],
-            [ME,E,R,R]
-        ]
-    ];
+            [
+                [MD,D,D,MD],
+                [R,D,D,MD],
+                [R,D,D,MD],
+                [R,D,D,MD]
+            ],
+            [
+                [ME,D,D,MD],
+                [E,D,D,MD],
+                [E,R,D,D],
+                [E,R,D,D]
+            ],
+            [
+                [ME,E,MD,MD],
+                [E,E,D,D],
+                [ME,ME,R,R],
+                [ME,E,R,R]
+            ],
+            [
+                [ME,ME,ME,MD],
+                [E,E,E,D],
+                [ME,E,R,R],
+                [ME,E,R,R]
+            ]
+        ];
 
     let width = 85;                 // 255 / 3
     let weights = [];
@@ -73,7 +45,7 @@ function fuzzy(sensors) {
         sw = getWeights(sensors[s], NUM_INPUT_CURVES, width)
         weights.push(sw);
 
-        // inference
+        // aggregation
         fuzzy_distances.push( sw.indexOf( Math.max.apply(Math, sw) ) );
     }
 
