@@ -1,8 +1,10 @@
 ## Fuzzy logic controlled robot simulation
-### [DEMO](https://lucaspar.com/fuzzy_bot.html)
 
-This is a simulation of a robot controlled by **fuzzy logic**.
+### [Demo](https://lucaspar.com/fuzzy_bot.html)
+
+> This is a simulation of a robot controlled by **fuzzy logic**.
 It is built in JavaScript and runs in modern browsers, ideally in a machine with a graphics accelerator.
+
 
 ### Project dependencies
 
@@ -12,7 +14,18 @@ It is built in JavaScript and runs in modern browsers, ideally in a machine with
 * [**Stats.js**](https://github.com/mrdoob/stats.js/) - JavaScript performance monitor
 * [**Simplex-noise**](http://staffwww.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf) - Noise generation algorithm
 
-### Visão Geral ###
+
+### Running local demo
+
+##### Serve src/ directory
+```bash
+npm i -g static-server
+static-server -p 1234 src/
+# open localhost:1234
+```
+
+
+### Overview
 
 * #### Scene components `scene.js`
 
